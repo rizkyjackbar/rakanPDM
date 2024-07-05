@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Car Price Prediction</title>
+</head>
+<body>
+    <h1>Car Price Prediction</h1>
+    <form method="POST" action="/predict">
+        <label for="brand">Car Brand:</label>
+        <input type="text" id="brand" name="brand"><br><br>
+        <label for="year">Car Year:</label>
+        <input type="number" id="year" name="year"><br><br>
+        <label for="mileage">Car Mileage (km):</label>
+        <input type="number" id="mileage" name="mileage"><br><br>
+        <label for="transmission">Transmission Type:</label>
+        <input type="text" id="transmission" name="transmission"><br><br>
+        <input type="submit" value="Predict">
+    </form>
+    
+    {% if predicted_price_rf is not none %}
+    <h2>Predicted Price (Random Forest): Rp {{ predicted_price_rf }}</h2>
+    <h2>Predicted Price (KNN): Rp {{ predicted_price_knn }}</h2>
+    {% endif %}
+</body>
+</html>
