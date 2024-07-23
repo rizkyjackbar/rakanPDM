@@ -31,10 +31,10 @@
             <input type="submit" value="Predict" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
         </form>
         
-        {% if predicted_price_rf is not none %}
+        {% if predicted_price_rf is not none and predicted_price_knn is not none %}
         <div style="margin-top: 20px; text-align: center;">
-            <h2 style="color: #333;">Predicted Price (Random Forest): Rp {{ predicted_price_rf }}</h2>
-            <h2 style="color: #333;">Predicted Price (KNN): Rp {{ predicted_price_knn }}</h2>
+            <h2 style="color: #333;">Predicted Price (Random Forest): Rp {{ predicted_price_rf | format_price }}</h2>
+            <h2 style="color: #333;">Predicted Price (KNN): Rp {{ predicted_price_knn | format_price }}</h2>
         </div>
         {% endif %}
     </div>

@@ -60,6 +60,14 @@ model_knn.fit(X_train_cleaned, y_train_cleaned)
 car_names = carDf['car name'].unique()
 transmission_types = carDf['transmission'].unique()
 
+# Add custom filter to format price
+@app.template_filter('format_price')
+def format_price(value):
+    try:
+        return "{:,.0f}".format(value)
+    except (ValueError, TypeError):
+        return value
+
 # Flask routes
 @app.route('/')
 def index():
