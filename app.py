@@ -16,7 +16,7 @@ app = Flask(__name__)
 carDfPath = 'used_car2.csv'
 carDf = pd.read_csv(carDfPath)
 
-features = ['brand', 'year', 'mileage (km)', 'transmission', 'rear camera', 'sun roof', 'auto retract mirror',
+features = ['car name', 'year', 'mileage (km)', 'transmission', 'rear camera', 'sun roof', 'auto retract mirror',
             'electric parking brake', 'map navigator', 'vehicle stability control', 'keyless push start',
             'sports mode', '360 camera view', 'power sliding door', 'auto cruise control']
 target = 'price (Rp)'
@@ -34,7 +34,7 @@ X_train_cleaned, X_test_cleaned, y_train_cleaned, y_test_cleaned = train_test_sp
 
 # Preprocessing pipelines
 numerical_features = ['year', 'mileage (km)']
-categorical_features = ['brand', 'transmission']
+categorical_features = ['car name', 'transmission']
 numeric_transformer = Pipeline(steps=[('scaler', StandardScaler())])
 categorical_transformer = Pipeline(steps=[('onehot', OneHotEncoder(handle_unknown='ignore'))])
 preprocessor = ColumnTransformer(transformers=[('num', numeric_transformer, numerical_features),
@@ -56,20 +56,24 @@ model_knn = Pipeline(steps=[('preprocessor', preprocessor),
                             ('regressor', KNeighborsRegressor())])
 model_knn.fit(X_train_cleaned, y_train_cleaned)
 
+# Extract unique values for Car Name and Transmission Type
+car_names = carDf['car name'].unique()
+transmission_types = carDf['transmission'].unique()
+
 # Flask routes
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', car_names=car_names, transmission_types=transmission_types)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    brand = request.form['brand']
+    car_name = request.form['car_name']
     year = int(request.form['year'])
     mileage = int(request.form['mileage'])
     transmission = request.form['transmission']
     
     new_data = pd.DataFrame({
-        'brand': [brand],
+        'car name': [car_name],
         'year': [year],
         'mileage (km)': [mileage],
         'transmission': [transmission],
@@ -90,8 +94,14 @@ def predict():
     predicted_price_knn = model_knn.predict(new_data)[0]
 
     return render_template('index.html', 
+                           car_names=car_names, 
+                           transmission_types=transmission_types,
                            predicted_price_rf=predicted_price_rf, 
-                           predicted_price_knn=predicted_price_knn)
+                           predicted_price_knn=predicted_price_knn,
+                           car_name=car_name,
+                           year=year,
+                           mileage=mileage,
+                           transmission=transmission)
 
 if __name__ == "__main__":
     app.run(debug=True)
