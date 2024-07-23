@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -73,11 +73,22 @@ def format_price(value):
 def index():
     return render_template('index.html', car_names=car_names, transmission_types=transmission_types)
 
+@app.route('/get_options', methods=['POST'])
+def get_options():
+    car_name = request.form['car_name']
+    car_data = carDf[carDf['car name'] == car_name]
+    
+    years = car_data['year'].unique().tolist()
+    mileages = car_data['mileage (km)'].unique().tolist()
+    transmissions = car_data['transmission'].unique().tolist()
+    
+    return jsonify({'years': years, 'mileages': mileages, 'transmissions': transmissions})
+
 @app.route('/predict', methods=['POST'])
 def predict():
     car_name = request.form['car_name']
     year = int(request.form['year'])
-    mileage = int(request.form['mileage'])
+    mileage = float(request.form['mileage'])  # Convert to float first
     transmission = request.form['transmission']
     
     new_data = pd.DataFrame({
@@ -101,11 +112,14 @@ def predict():
     predicted_price_rf = best_model_rf.predict(new_data)[0]
     predicted_price_knn = model_knn.predict(new_data)[0]
 
+    actual_price = carDf[(carDf['car name'] == car_name) & (carDf['year'] == year)]['price (Rp)'].mean()
+
     return render_template('index.html', 
                            car_names=car_names, 
                            transmission_types=transmission_types,
                            predicted_price_rf=predicted_price_rf, 
                            predicted_price_knn=predicted_price_knn,
+                           actual_price=actual_price,
                            car_name=car_name,
                            year=year,
                            mileage=mileage,

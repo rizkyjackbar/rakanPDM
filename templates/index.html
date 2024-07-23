@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Car Price Prediction</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f2f2f2; padding: 20px;">
 
@@ -16,16 +17,18 @@
             </select>
             
             <label for="year" style="font-weight: bold; color: #555;">Car Year:</label>
-            <input type="number" id="year" name="year" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;" value="{{ year }}">
+            <select id="year" name="year" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <!-- Options will be populated dynamically using jQuery -->
+            </select>
             
             <label for="mileage" style="font-weight: bold; color: #555;">Car Mileage (km):</label>
-            <input type="number" id="mileage" name="mileage" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;" value="{{ mileage }}">
+            <select id="mileage" name="mileage" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <!-- Options will be populated dynamically using jQuery -->
+            </select>
             
             <label for="transmission" style="font-weight: bold; color: #555;">Transmission Type:</label>
             <select id="transmission" name="transmission" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                {% for transmission_option in transmission_types %}
-                <option value="{{ transmission_option }}" {% if transmission_option == transmission %}selected{% endif %}>{{ transmission_option }}</option>
-                {% endfor %}
+                <!-- Options will be populated dynamically using jQuery -->
             </select>
             
             <input type="submit" value="Predict" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
@@ -35,9 +38,43 @@
         <div style="margin-top: 20px; text-align: center;">
             <h2 style="color: #333;">Predicted Price (Random Forest): Rp {{ predicted_price_rf | format_price }}</h2>
             <h2 style="color: #333;">Predicted Price (KNN): Rp {{ predicted_price_knn | format_price }}</h2>
+            {% if actual_price is not none %}
+            <h2 style="color: #333;">Actual Price: Rp {{ actual_price | format_price }}</h2>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 
+    <script>
+        $(document).ready(function() {
+            function updateDropdowns() {
+                var car_name = $('#car_name').val();
+                $.ajax({
+                    url: '/get_options',
+                    type: 'POST',
+                    data: { car_name: car_name },
+                    success: function(response) {
+                        var yearOptions = response.years.map(function(year) {
+                            return '<option value="' + year + '">' + year + '</option>';
+                        });
+                        $('#year').html(yearOptions);
+
+                        var mileageOptions = response.mileages.map(function(mileage) {
+                            return '<option value="' + mileage + '">' + mileage + '</option>';
+                        });
+                        $('#mileage').html(mileageOptions);
+
+                        var transmissionOptions = response.transmissions.map(function(transmission) {
+                            return '<option value="' + transmission + '">' + transmission + '</option>';
+                        });
+                        $('#transmission').html(transmissionOptions);
+                    }
+                });
+            }
+
+            $('#car_name').change(updateDropdowns);
+            updateDropdowns();
+        });
+    </script>
 </body>
 </html>
